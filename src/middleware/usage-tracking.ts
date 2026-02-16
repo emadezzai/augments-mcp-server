@@ -1,41 +1,15 @@
 /**
- * Anonymous usage tracking middleware
+ * Anonymous usage tracking middleware - Local Implementation
  *
  * Tracks usage statistics for analytics without collecting PII.
- * Stored in Upstash Redis for aggregation.
+ * Stored in local file cache for aggregation.
  */
 
-import { Redis } from '@upstash/redis';
 import { config } from '@/config';
 import { getLogger } from '@/utils/logger';
+import { getFileCache } from '@/cache/file-cache';
 
 const logger = getLogger('usage-tracking');
-
-// Redis client for usage tracking
-let redis: Redis | null = null;
-
-function getRedis(): Redis | null {
-  if (redis) {
-    return redis;
-  }
-
-  if (!config.upstashRedisUrl || !config.upstashRedisToken) {
-    return null;
-  }
-
-  try {
-    redis = new Redis({
-      url: config.upstashRedisUrl,
-      token: config.upstashRedisToken,
-    });
-    return redis;
-  } catch (error) {
-    logger.warn('Failed to initialize Redis for usage tracking', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return null;
-  }
-}
 
 export interface UsageEvent {
   tool: string;
@@ -46,57 +20,76 @@ export interface UsageEvent {
   duration_ms?: number;
 }
 
+export interface UsageStats {
+  tools: Record<string, number>;
+  frameworks: Record<string, number>;
+  tiers: Record<string, number>;
+  total_requests: number;
+  success_rate: number;
+}
+
+interface DailyUsage {
+  tools: Record<string, number>;
+  frameworks: Record<string, number>;
+  tiers: Record<string, number>;
+  success: number;
+  failure: number;
+}
+
+/**
+ * Get usage data for a specific date
+ */
+async function getDailyUsage(date: string): Promise<DailyUsage> {
+  const cache = getFileCache();
+  const key = `usage:${date}`;
+  const data = await cache.get<DailyUsage>(key);
+  
+  return data || {
+    tools: {},
+    frameworks: {},
+    tiers: {},
+    success: 0,
+    failure: 0,
+  };
+}
+
+/**
+ * Save usage data for a specific date
+ */
+async function saveDailyUsage(date: string, usage: DailyUsage): Promise<void> {
+  const cache = getFileCache();
+  const key = `usage:${date}`;
+  // Keep for 90 days
+  await cache.set(key, usage, 90 * 24 * 60 * 60);
+}
+
 /**
  * Track a tool usage event
  */
 export async function trackUsage(event: UsageEvent): Promise<void> {
-  const redisClient = getRedis();
-  if (!redisClient) {
-    return;
-  }
-
   try {
     const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const hour = new Date().getUTCHours();
+    const usage = await getDailyUsage(date);
 
-    // Increment counters
-    const pipeline = redisClient.pipeline();
+    // Increment tool usage
+    usage.tools[event.tool] = (usage.tools[event.tool] || 0) + 1;
 
-    // Daily tool usage
-    pipeline.hincrby(`usage:${date}:tools`, event.tool, 1);
-
-    // Hourly tool usage for today
-    pipeline.hincrby(`usage:${date}:${hour}:tools`, event.tool, 1);
-
-    // Framework usage (if applicable)
+    // Increment framework usage (if applicable)
     if (event.framework) {
-      pipeline.hincrby(`usage:${date}:frameworks`, event.framework, 1);
+      usage.frameworks[event.framework] = (usage.frameworks[event.framework] || 0) + 1;
     }
 
-    // Tier usage
-    pipeline.hincrby(`usage:${date}:tiers`, event.tier, 1);
+    // Increment tier usage
+    usage.tiers[event.tier] = (usage.tiers[event.tier] || 0) + 1;
 
-    // Success/failure rates
+    // Increment success/failure
     if (event.success) {
-      pipeline.hincrby(`usage:${date}:status`, 'success', 1);
+      usage.success++;
     } else {
-      pipeline.hincrby(`usage:${date}:status`, 'failure', 1);
+      usage.failure++;
     }
 
-    // Set expiry (keep 90 days of data)
-    const keys = [
-      `usage:${date}:tools`,
-      `usage:${date}:${hour}:tools`,
-      `usage:${date}:frameworks`,
-      `usage:${date}:tiers`,
-      `usage:${date}:status`,
-    ];
-
-    for (const key of keys) {
-      pipeline.expire(key, 90 * 24 * 60 * 60); // 90 days
-    }
-
-    await pipeline.exec();
+    await saveDailyUsage(date, usage);
 
     logger.debug('Usage tracked', {
       tool: event.tool,
@@ -117,24 +110,7 @@ export async function trackUsage(event: UsageEvent): Promise<void> {
 export async function getUsageStats(
   startDate: string,
   endDate: string
-): Promise<{
-  tools: Record<string, number>;
-  frameworks: Record<string, number>;
-  tiers: Record<string, number>;
-  total_requests: number;
-  success_rate: number;
-}> {
-  const redisClient = getRedis();
-  if (!redisClient) {
-    return {
-      tools: {},
-      frameworks: {},
-      tiers: {},
-      total_requests: 0,
-      success_rate: 0,
-    };
-  }
-
+): Promise<UsageStats> {
   try {
     const tools: Record<string, number> = {};
     const frameworks: Record<string, number> = {};
@@ -146,39 +122,27 @@ export async function getUsageStats(
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
       const date = d.toISOString().split('T')[0];
+      const usage = await getDailyUsage(date);
 
-      // Get tool usage
-      const toolUsage = await redisClient.hgetall(`usage:${date}:tools`);
-      if (toolUsage) {
-        for (const [tool, count] of Object.entries(toolUsage)) {
-          tools[tool] = (tools[tool] || 0) + Number(count);
-        }
+      // Aggregate tool usage
+      for (const [tool, count] of Object.entries(usage.tools)) {
+        tools[tool] = (tools[tool] || 0) + count;
       }
 
-      // Get framework usage
-      const frameworkUsage = await redisClient.hgetall(`usage:${date}:frameworks`);
-      if (frameworkUsage) {
-        for (const [framework, count] of Object.entries(frameworkUsage)) {
-          frameworks[framework] = (frameworks[framework] || 0) + Number(count);
-        }
+      // Aggregate framework usage
+      for (const [framework, count] of Object.entries(usage.frameworks)) {
+        frameworks[framework] = (frameworks[framework] || 0) + count;
       }
 
-      // Get tier usage
-      const tierUsage = await redisClient.hgetall(`usage:${date}:tiers`);
-      if (tierUsage) {
-        for (const [tier, count] of Object.entries(tierUsage)) {
-          tiers[tier] = (tiers[tier] || 0) + Number(count);
-        }
+      // Aggregate tier usage
+      for (const [tier, count] of Object.entries(usage.tiers)) {
+        tiers[tier] = (tiers[tier] || 0) + count;
       }
 
-      // Get status
-      const status = await redisClient.hgetall(`usage:${date}:status`);
-      if (status) {
-        totalSuccess += Number(status.success || 0);
-        totalFailure += Number(status.failure || 0);
-      }
+      totalSuccess += usage.success;
+      totalFailure += usage.failure;
     }
 
     const totalRequests = totalSuccess + totalFailure;

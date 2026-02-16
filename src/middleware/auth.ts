@@ -1,11 +1,10 @@
 /**
- * API Key authentication middleware
+ * API Key authentication middleware - Local Implementation
  *
- * Built but disabled for v3.0 - all requests pass through.
- * Infrastructure ready for premium tier implementation.
+ * All requests pass through as free tier.
+ * Premium features are disabled for 100% local operation.
  */
 
-import { config } from '@/config';
 import { getLogger } from '@/utils/logger';
 
 const logger = getLogger('auth');
@@ -20,19 +19,10 @@ export interface AuthResult {
 /**
  * Validate API key from request headers
  *
- * Currently disabled - all requests are authenticated as free tier.
- * When premium is enabled, this will validate API keys.
+ * All requests are authenticated as free tier for local operation.
  */
 export async function validateApiKey(authHeader: string | null): Promise<AuthResult> {
-  // Premium features disabled - allow all requests
-  if (!config.premiumEnabled) {
-    return {
-      authenticated: true,
-      tier: 'free',
-    };
-  }
-
-  // If no auth header, treat as free tier
+  // Local mode - all requests are free tier
   if (!authHeader) {
     return {
       authenticated: true,
@@ -40,10 +30,9 @@ export async function validateApiKey(authHeader: string | null): Promise<AuthRes
     };
   }
 
-  // Parse Bearer token
+  // Parse Bearer token if provided (for future use)
   const match = authHeader.match(/^Bearer\s+(.+)$/i);
   if (!match) {
-    logger.warn('Invalid authorization header format');
     return {
       authenticated: true,
       tier: 'free',
@@ -52,15 +41,9 @@ export async function validateApiKey(authHeader: string | null): Promise<AuthRes
 
   const apiKey = match[1];
 
-  // TODO: When premium is enabled, validate API key against database
-  // For now, all valid-looking keys are treated as authenticated
+  // Log if API key is provided (for debugging)
   if (apiKey.startsWith('aug_')) {
-    logger.debug('API key provided', { key: apiKey.substring(0, 8) + '...' });
-    return {
-      authenticated: true,
-      apiKey,
-      tier: 'pro', // Would be looked up from database
-    };
+    logger.debug('API key provided (ignored in local mode)', { key: apiKey.substring(0, 8) + '...' });
   }
 
   return {
@@ -71,62 +54,10 @@ export async function validateApiKey(authHeader: string | null): Promise<AuthRes
 
 /**
  * Check if a feature is available for the given tier
+ * 
+ * All features are available in local mode.
  */
-export function checkFeatureAccess(tier: AuthResult['tier'], feature: string): boolean {
-  // All features are currently available for all tiers
-  // When premium is enabled, this will check feature access
-  if (!config.premiumEnabled) {
-    return true;
-  }
-
-  const tierFeatures: Record<string, Set<string>> = {
-    free: new Set([
-      'list_available_frameworks',
-      'search_frameworks',
-      'get_framework_info',
-      'get_registry_stats',
-      'get_framework_docs',
-      'get_framework_examples',
-      'search_documentation',
-      'get_framework_context',
-      'analyze_code_compatibility',
-      'check_framework_updates',
-      'get_cache_stats',
-    ]),
-    pro: new Set([
-      // All free features plus:
-      'refresh_framework_cache',
-      'custom_frameworks', // Future feature
-    ]),
-    team: new Set([
-      // All pro features plus team features
-    ]),
-    enterprise: new Set([
-      // All features
-    ]),
-  };
-
-  // Enterprise has access to everything
-  if (tier === 'enterprise') {
-    return true;
-  }
-
-  // Check if feature is in tier's feature set
-  const features = tierFeatures[tier];
-  if (features && features.has(feature)) {
-    return true;
-  }
-
-  // Check if feature is in a lower tier
-  const tierOrder = ['free', 'pro', 'team', 'enterprise'];
-  const currentTierIndex = tierOrder.indexOf(tier);
-
-  for (let i = 0; i < currentTierIndex; i++) {
-    const lowerTierFeatures = tierFeatures[tierOrder[i]];
-    if (lowerTierFeatures && lowerTierFeatures.has(feature)) {
-      return true;
-    }
-  }
-
-  return false;
+export function checkFeatureAccess(_tier: AuthResult['tier'], _feature: string): boolean {
+  // All features are available for local operation
+  return true;
 }

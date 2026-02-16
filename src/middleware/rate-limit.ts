@@ -1,61 +1,34 @@
 /**
- * Rate limiting middleware using Upstash
+ * Rate limiting middleware - Local Implementation
+ *
+ * Simple in-memory rate limiting without Redis.
+ * For production, consider using a distributed solution.
  */
 
-import { Ratelimit } from '@upstash/ratelimit';
-import { Redis } from '@upstash/redis';
 import { config } from '@/config';
 import { getLogger } from '@/utils/logger';
 
 const logger = getLogger('rate-limit');
 
-// Rate limiter instance
-let ratelimit: Ratelimit | null = null;
-
 /**
- * Initialize rate limiter
+ * In-memory rate limit store
  */
-function getRateLimiter(): Ratelimit | null {
-  if (!config.rateLimitEnabled) {
-    return null;
-  }
-
-  if (ratelimit) {
-    return ratelimit;
-  }
-
-  // Check if Upstash is configured
-  if (!config.upstashRedisUrl || !config.upstashRedisToken) {
-    logger.warn('Rate limiting disabled: Upstash Redis not configured');
-    return null;
-  }
-
-  try {
-    const redis = new Redis({
-      url: config.upstashRedisUrl,
-      token: config.upstashRedisToken,
-    });
-
-    ratelimit = new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(config.rateLimitRequests, `${config.rateLimitWindow}s`),
-      analytics: true,
-      prefix: 'augments-mcp',
-    });
-
-    logger.info('Rate limiter initialized', {
-      requests: config.rateLimitRequests,
-      window: config.rateLimitWindow,
-    });
-
-    return ratelimit;
-  } catch (error) {
-    logger.error('Failed to initialize rate limiter', {
-      error: error instanceof Error ? error.message : String(error),
-    });
-    return null;
-  }
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
 }
+
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+// Cleanup old entries every minute
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitStore.entries()) {
+    if (now > entry.resetAt) {
+      rateLimitStore.delete(key);
+    }
+  }
+}, 60000);
 
 export interface RateLimitResult {
   success: boolean;
@@ -68,10 +41,8 @@ export interface RateLimitResult {
  * Check rate limit for an identifier (IP address or API key)
  */
 export async function checkRateLimit(identifier: string): Promise<RateLimitResult> {
-  const limiter = getRateLimiter();
-
-  if (!limiter) {
-    // Rate limiting disabled or not configured
+  if (!config.rateLimitEnabled) {
+    // Rate limiting disabled
     return {
       success: true,
       limit: -1,
@@ -80,35 +51,51 @@ export async function checkRateLimit(identifier: string): Promise<RateLimitResul
     };
   }
 
-  try {
-    const result = await limiter.limit(identifier);
+  const now = Date.now();
+  const windowMs = config.rateLimitWindow * 1000;
+  const resetAt = now + windowMs;
 
-    if (!result.success) {
-      logger.warn('Rate limit exceeded', {
-        identifier: identifier.substring(0, 8) + '...',
-        remaining: result.remaining,
-      });
-    }
+  const entry = rateLimitStore.get(identifier);
 
-    return {
-      success: result.success,
-      limit: result.limit,
-      remaining: result.remaining,
-      reset: result.reset,
-    };
-  } catch (error) {
-    logger.error('Rate limit check failed', {
-      error: error instanceof Error ? error.message : String(error),
+  if (!entry || now > entry.resetAt) {
+    // First request or window expired
+    rateLimitStore.set(identifier, {
+      count: 1,
+      resetAt,
     });
 
-    // Fail open - allow request if rate limiting fails
     return {
       success: true,
-      limit: -1,
-      remaining: -1,
-      reset: 0,
+      limit: config.rateLimitRequests,
+      remaining: config.rateLimitRequests - 1,
+      reset: resetAt,
     };
   }
+
+  if (entry.count >= config.rateLimitRequests) {
+    // Rate limit exceeded
+    logger.warn('Rate limit exceeded', {
+      identifier: identifier.substring(0, 8) + '...',
+      remaining: 0,
+    });
+
+    return {
+      success: false,
+      limit: config.rateLimitRequests,
+      remaining: 0,
+      reset: entry.resetAt,
+    };
+  }
+
+  // Increment count
+  entry.count++;
+
+  return {
+    success: true,
+    limit: config.rateLimitRequests,
+    remaining: config.rateLimitRequests - entry.count,
+    reset: entry.resetAt,
+  };
 }
 
 /**

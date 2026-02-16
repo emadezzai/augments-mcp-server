@@ -4,9 +4,14 @@
  * Finds examples in official repos (e.g., `reactjs/react.dev`).
  * Parses markdown to extract code blocks.
  * Tags examples with concepts they demonstrate.
+ *
+ * Updated for 100% local operation:
+ * - GitHub: Primary source for examples (free, no API key needed)
+ * - Chutes: Optional enhancement for additional examples
  */
 
 import { getLogger } from '@/utils/logger';
+import { getChutesClient } from '@/providers/chutes-client';
 
 const logger = getLogger('example-extractor');
 
@@ -482,40 +487,65 @@ export class ExampleExtractor {
 
   /**
    * Get examples for a specific concept and framework
+   * 
+   * Sources (in order):
+   * 1. Chutes (optional, if API key configured)
+   * 2. GitHub (free, no API key needed)
    */
   async getExamplesForConcept(
     framework: string,
     concept: string
   ): Promise<CodeExample[]> {
-    const config = this.getDocSource(framework);
-    if (!config) {
-      logger.debug('No doc source for framework', { framework });
-      return [];
-    }
-
-    const docPaths = this.getDocPathsForConcept(framework, concept);
     const allExamples: CodeExample[] = [];
 
-    // Fetch all doc paths in parallel
-    const fetchPromises = docPaths.map(async (path) => {
-      const fullPath = config.docsPath
-        ? `${config.docsPath}/${path}`
-        : path;
-
-      const examples = await this.fetchExamplesFromGitHub(config, fullPath);
-
-      // Filter the fetched examples for relevance
-      return examples.filter((ex) =>
-        ex.concepts.includes(concept.toLowerCase()) ||
-        ex.code.toLowerCase().includes(concept.toLowerCase())
-      );
-    });
-
-    const results = await Promise.allSettled(fetchPromises);
-    for (const result of results) {
-      if (result.status === 'fulfilled') {
-        allExamples.push(...result.value);
+    // 1. Try Chutes first (if configured)
+    const chutesClient = getChutesClient();
+    if (chutesClient) {
+      try {
+        const chutesExamples = await chutesClient.extractExamples(framework, concept);
+        allExamples.push(...chutesExamples);
+        logger.debug('Fetched examples from Chutes', {
+          framework,
+          concept,
+          count: chutesExamples.length,
+        });
+      } catch (error) {
+        logger.warn('Chutes fetch failed, falling back to GitHub', {
+          framework,
+          concept,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
+    }
+
+    // 2. Fetch from GitHub (always available)
+    const config = this.getDocSource(framework);
+    if (config) {
+      const docPaths = this.getDocPathsForConcept(framework, concept);
+
+      // Fetch all doc paths in parallel
+      const fetchPromises = docPaths.map(async (path) => {
+        const fullPath = config.docsPath
+          ? `${config.docsPath}/${path}`
+          : path;
+
+        const examples = await this.fetchExamplesFromGitHub(config, fullPath);
+
+        // Filter the fetched examples for relevance
+        return examples.filter((ex) =>
+          ex.concepts.includes(concept.toLowerCase()) ||
+          ex.code.toLowerCase().includes(concept.toLowerCase())
+        );
+      });
+
+      const results = await Promise.allSettled(fetchPromises);
+      for (const result of results) {
+        if (result.status === 'fulfilled') {
+          allExamples.push(...result.value);
+        }
+      }
+    } else {
+      logger.debug('No doc source for framework', { framework });
     }
 
     // Deduplicate by code content
@@ -537,6 +567,7 @@ export class ExampleExtractor {
       framework,
       concept,
       count: scored.length,
+      sources: chutesClient ? 'chutes+github' : 'github',
     });
 
     return scored;

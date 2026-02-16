@@ -1,5 +1,8 @@
 /**
  * Environment configuration for Augments MCP Server
+ * 
+ * Updated for 100% local operation - no Upstash Redis required.
+ * Minimax and Chutes are optional enhancements.
  */
 
 export interface Config {
@@ -8,18 +11,25 @@ export interface Config {
   host: string;
   env: 'development' | 'production' | 'test';
 
-  // GitHub settings
+  // GitHub settings (optional - for examples fallback)
   githubToken?: string;
 
-  // Redis/Upstash settings
-  upstashRedisUrl?: string;
-  upstashRedisToken?: string;
+  // Minimax settings (optional - for enhanced query parsing)
+  minimaxApiKey?: string;
+  minimaxBaseUrl?: string;
+  minimaxModel?: string;
+
+  // Chutes settings (optional - for enhanced examples)
+  chutesApiKey?: string;
+  chutesBaseUrl?: string;
 
   // Cache settings
+  cachePath: string;
+  cacheMaxEntries: number;
   enableAutoCache: boolean;
   enableHotReload: boolean;
 
-  // Rate limiting
+  // Rate limiting (local, no Redis)
   rateLimitEnabled: boolean;
   rateLimitRequests: number;
   rateLimitWindow: number; // in seconds
@@ -28,7 +38,8 @@ export interface Config {
   logLevel: 'debug' | 'info' | 'warn' | 'error';
 
   // Feature flags
-  premiumEnabled: boolean;
+  useAiQueryParsing: boolean;
+  useChutesExamples: boolean;
 }
 
 function getEnvString(key: string, defaultValue?: string): string | undefined {
@@ -58,19 +69,26 @@ export function getConfig(): Config {
     host: getEnvString('HOST', '0.0.0.0') || '0.0.0.0',
     env,
 
-    // GitHub settings
+    // GitHub settings (optional)
     githubToken: getEnvString('GITHUB_TOKEN'),
 
-    // Redis/Upstash settings
-    upstashRedisUrl: getEnvString('UPSTASH_REDIS_REST_URL'),
-    upstashRedisToken: getEnvString('UPSTASH_REDIS_REST_TOKEN'),
+    // Minimax settings (optional)
+    minimaxApiKey: getEnvString('MINIMAX_API_KEY'),
+    minimaxBaseUrl: getEnvString('MINIMAX_BASE_URL', 'https://api.minimax.chat/v1'),
+    minimaxModel: getEnvString('MINIMAX_MODEL', 'abab6.5s-chat'),
+
+    // Chutes settings (optional)
+    chutesApiKey: getEnvString('CHUTES_API_KEY'),
+    chutesBaseUrl: getEnvString('CHUTES_BASE_URL', 'https://api.chutes.ai/v1'),
 
     // Cache settings
+    cachePath: getEnvString('CACHE_PATH', './.cache') || './.cache',
+    cacheMaxEntries: getEnvNumber('CACHE_MAX_ENTRIES', 300),
     enableAutoCache: getEnvBoolean('ENABLE_AUTO_CACHE', false),
     enableHotReload: getEnvBoolean('ENABLE_HOT_RELOAD', env === 'development'),
 
-    // Rate limiting
-    rateLimitEnabled: getEnvBoolean('RATE_LIMIT_ENABLED', true),
+    // Rate limiting (local)
+    rateLimitEnabled: getEnvBoolean('RATE_LIMIT_ENABLED', false),
     rateLimitRequests: getEnvNumber('RATE_LIMIT_REQUESTS', 100),
     rateLimitWindow: getEnvNumber('RATE_LIMIT_WINDOW', 3600), // 1 hour
 
@@ -78,7 +96,8 @@ export function getConfig(): Config {
     logLevel: (getEnvString('LOG_LEVEL', env === 'production' ? 'info' : 'debug') || 'info') as Config['logLevel'],
 
     // Feature flags
-    premiumEnabled: getEnvBoolean('PREMIUM_ENABLED', false),
+    useAiQueryParsing: getEnvBoolean('USE_AI_QUERY_PARSING', false),
+    useChutesExamples: getEnvBoolean('USE_CHUTES_EXAMPLES', false),
   };
 }
 
