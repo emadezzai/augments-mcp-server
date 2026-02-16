@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "augments": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "http://localhost:3000/api/mcp"],
+      "transport": "http",
+      "description": "Augments MCP Server - 100% Local & Free Framework Documentation Provider"
+    }
+  }
+}
