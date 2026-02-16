@@ -26,7 +26,51 @@ function useEffect(effect: EffectCallback, deps?: DependencyList): void
 
 Not 5KB of tutorial explaining what effects are.
 
-## Quick Start
+## 🚀 Quick Start - Auto Installation (NEW!)
+
+### One-Command Setup for Any Project
+
+The new **Auto Installation** feature works automatically in any project:
+
+```bash
+# In any project directory
+npx augments-mcp install
+```
+
+**What it does:**
+1. ✅ Detects if you have Cline or Claude Code installed
+2. ✅ Configures the MCP server automatically
+3. ✅ Installs dependencies if needed
+4. ✅ Creates helper scripts
+5. ✅ Works 100% locally - no API keys needed!
+
+### Usage Examples
+
+```bash
+# Install and configure
+npx augments-mcp install
+
+# Start local server (if using local mode)
+npx augments-mcp start
+
+# Check status
+npx augments-mcp status
+
+# Show current configuration
+npx augments-mcp config
+```
+
+### In Cline/Claude Code
+
+After installation, just use:
+```
+@augments get_api_context query="useEffect cleanup" framework="react"
+@augments search_apis query="state management hook"
+```
+
+---
+
+## Manual Setup Options
 
 ### Option 1: Hosted MCP Server (Recommended)
 
@@ -49,6 +93,16 @@ claude mcp list
     }
   }
 }
+```
+
+### Option 3: Local Development
+
+```bash
+# Clone and run locally
+git clone https://github.com/augmnt/augments-mcp-server.git
+cd augments-mcp-server
+npm install
+npm run dev
 ```
 
 ### Using the v4 Tools

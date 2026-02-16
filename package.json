@@ -14,7 +14,10 @@
     "test:watch": "vitest",
     "setup:local": "npx tsx scripts/setup-local.ts",
     "clean:cache": "rm -rf .cache",
-    "check:env": "node -e \"console.log('✅ Server ready for local development')\""
+    "check:env": "node -e \"console.log('✅ Server ready for local development')\"",
+    "cli:build": "tsc --project tsconfig-cli.json && chmod +x dist/auto-install.js",
+    "cli:dev": "tsx scripts/auto-install.ts",
+    "cli:publish": "npm run cli:build && cd dist && npm publish"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.0",

@@ -1,0 +1,53 @@
+{
+  "name": "augments-mcp",
+  "version": "1.0.0",
+  "description": "Augments MCP Server - Auto Installation & Management CLI",
+  "type": "module",
+  "main": "dist/auto-install.js",
+  "bin": {
+    "augments-mcp": "./dist/auto-install.js"
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig-cli.json",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "cline",
+    "ai",
+    "documentation",
+    "typescript",
+    "auto-install",
+    "developer-tools"
+  ],
+  "author": "Augments",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/auto-install.js",
+    "README.md",
+    "INSTALL.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/emadezzai/augments-mcp-server"
+  },
+  "bugs": {
+    "url": "https://github.com/emadezzai/augments-mcp-server/issues"
+  },
+  "homepage": "https://github.com/emadezzai/augments-mcp-server#readme",
+  "publishConfig": {
+    "access": "public"
+  }
+}
