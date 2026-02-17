@@ -47,3 +47,42 @@ export {
   type FindRelatedFilesOutput,
   type RelatedFile,
 } from './find-related-files';
+
+// Extract Module API
+export {
+  extractModuleApi,
+  formatExtractModuleApiResponse,
+  ExtractModuleApiInputSchema,
+  type ExtractModuleApiInput,
+  type ExtractModuleApiOutput,
+  type ModuleExportInfo,
+  type ModuleExportMember,
+  type TypeInfo,
+  type InterfaceInfo,
+  type InterfaceProperty,
+  type InterfaceMethod,
+} from './extract-module-api';
+
+// Detect Architecture Pattern
+export {
+  detectArchitecturePattern,
+  formatDetectArchitecturePatternResponse,
+  DetectArchitecturePatternInputSchema,
+  type DetectArchitecturePatternInput,
+  type DetectArchitecturePatternOutput,
+  type ArchitecturePattern,
+  type DirectoryStructure,
+  type PatternEvidence,
+} from './detect-architecture-pattern';
+
+// Analyze Import Graph
+export {
+  analyzeImportGraph,
+  formatAnalyzeImportGraphResponse,
+  AnalyzeImportGraphInputSchema,
+  type AnalyzeImportGraphInput,
+  type AnalyzeImportGraphOutput,
+  type ImportRelationship,
+  type DependencyNode,
+  type CircularDependency,
+} from './analyze-import-graph';

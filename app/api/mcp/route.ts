@@ -14,7 +14,7 @@ import { getGitHubProvider } from '@/providers/github';
 import { getWebsiteProvider } from '@/providers/website';
 import { getApiContext, searchApis, getVersionInfo, formatApiContextResponse, formatSearchApisResponse, formatVersionInfoResponse } from '@/tools/v4';
 import { searchFrameworks, getFrameworkInfo, getFrameworkDocs, getFrameworkContext, listAvailableFrameworks, getRegistryStats, checkFrameworkUpdates, refreshFrameworkCache, getCacheStats } from '@/tools';
-import { analyzeCodebaseStructure, formatCodebaseStructureResponse, semanticCodeSearch, formatSemanticSearchResponse, getFileContext, formatFileContextResponse, findRelatedFiles, formatFindRelatedFilesResponse } from '@/tools/codebase';
+import { analyzeCodebaseStructure, formatCodebaseStructureResponse, semanticCodeSearch, formatSemanticSearchResponse, getFileContext, formatFileContextResponse, findRelatedFiles, formatFindRelatedFilesResponse, extractModuleApi, formatExtractModuleApiResponse, detectArchitecturePattern, formatDetectArchitecturePatternResponse, analyzeImportGraph, formatAnalyzeImportGraphResponse } from '@/tools/codebase';
 import { getLogger } from '@/utils/logger';
 
 const logger = getLogger('api:mcp');
@@ -497,6 +497,61 @@ async function createServer(): Promise<McpServer> {
         maxDepth: maxDepth ?? 3,
       });
       return { content: [{ type: 'text', text: formatFindRelatedFilesResponse(result) }] };
+    }
+  );
+
+  // Tool 17: extract_module_api
+  server.tool(
+    'extract_module_api',
+    'Extract the public API from a module including exports, types, interfaces, and dependencies. Essential for understanding module contracts.',
+    {
+      modulePath: z.string().min(1).describe('Path to the module to analyze'),
+      includePrivate: z.boolean().optional().describe('Include private/internal members'),
+      rootPath: z.string().optional().describe('Root path for resolving imports'),
+    },
+    async ({ modulePath, includePrivate, rootPath }) => {
+      const result = await extractModuleApi({
+        modulePath,
+        includePrivate: includePrivate ?? false,
+        rootPath,
+      });
+      return { content: [{ type: 'text', text: formatExtractModuleApiResponse(result) }] };
+    }
+  );
+
+  // Tool 18: detect_architecture_pattern
+  server.tool(
+    'detect_architecture_pattern',
+    'Detect design patterns and architecture styles used in a codebase. Analyzes directory structure, file naming, and code patterns to identify MVC, Clean Architecture, DDD, Hexagonal, Microservices, etc.',
+    {
+      rootPath: z.string().optional().describe('Root path to analyze (defaults to current working directory)'),
+      includeHidden: z.boolean().optional().default(false).describe('Include hidden files and directories'),
+    },
+    async ({ rootPath, includeHidden }) => {
+      const result = await detectArchitecturePattern({
+        rootPath,
+        includeHidden: includeHidden ?? false,
+      });
+      return { content: [{ type: 'text', text: formatDetectArchitecturePatternResponse(result) }] };
+    }
+  );
+
+  // Tool 19: analyze_import_graph
+  server.tool(
+    'analyze_import_graph',
+    'Analyze import/export dependencies in a codebase. Builds a dependency graph and detects circular dependencies. Essential for understanding code relationships and finding potential issues.',
+    {
+      rootPath: z.string().optional().describe('Root path to analyze (defaults to current working directory)'),
+      includeHidden: z.boolean().optional().default(false).describe('Include hidden files and directories'),
+      maxDepth: z.number().optional().describe('Maximum depth for analysis (1-10)'),
+    },
+    async ({ rootPath, includeHidden, maxDepth }) => {
+      const result = await analyzeImportGraph({
+        rootPath,
+        includeHidden: includeHidden ?? false,
+        maxDepth: maxDepth ? Math.min(Math.max(1, maxDepth), 10) : undefined,
+      });
+      return { content: [{ type: 'text', text: formatAnalyzeImportGraphResponse(result) }] };
     }
   );
 

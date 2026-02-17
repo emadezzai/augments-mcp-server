@@ -50,6 +50,12 @@ import {
   formatSemanticSearchResponse,
   analyzeCodebaseStructure,
   formatCodebaseStructureResponse,
+  extractModuleApi,
+  formatExtractModuleApiResponse,
+  detectArchitecturePattern,
+  formatDetectArchitecturePatternResponse,
+  analyzeImportGraph,
+  formatAnalyzeImportGraphResponse,
 } from '@/tools/codebase';
 import { FrameworkCategories } from '@/types';
 import { getLogger } from '@/utils/logger';
@@ -330,7 +336,77 @@ export async function getServer(): Promise<McpServer> {
         });
         return formatResult(formatCodebaseStructureResponse(result));
       } catch (error) {
-        logger.error('Tool execution failed', { tool: 'analyze_codebase_structure', error });
+        logger.error('Tool execution failed', { tool: 'analyze_codebase_structure' });
+        return formatError(error);
+      }
+    }
+  );
+  toolCount++;
+
+  server.tool(
+    'extract_module_api',
+    'Extract the public API from a module including exports, types, interfaces, and dependencies. Essential for understanding module contracts and contracts in large codebases.',
+    {
+      modulePath: z.string().min(1).describe('Path to the module to analyze'),
+      includePrivate: z.boolean().optional().default(false).describe('Include private/internal members'),
+      rootPath: z.string().optional().describe('Root path for resolving imports'),
+    },
+    async ({ modulePath, includePrivate, rootPath }) => {
+      try {
+        const result = await extractModuleApi({
+          modulePath,
+          includePrivate: includePrivate ?? false,
+          rootPath,
+        });
+        return formatResult(formatExtractModuleApiResponse(result));
+      } catch (error) {
+        logger.error('Tool execution failed', { tool: 'extract_module_api' });
+        return formatError(error);
+      }
+    }
+  );
+  toolCount++;
+
+  server.tool(
+    'detect_architecture_pattern',
+    'Detect design patterns and architecture styles used in a codebase. Analyzes directory structure, file naming, and code patterns to identify MVC, Clean Architecture, DDD, Hexagonal, Microservices, etc.',
+    {
+      rootPath: z.string().optional().describe('Root path to analyze (defaults to current working directory)'),
+      includeHidden: z.boolean().optional().default(false).describe('Include hidden files and directories'),
+    },
+    async ({ rootPath, includeHidden }) => {
+      try {
+        const result = await detectArchitecturePattern({
+          rootPath,
+          includeHidden: includeHidden ?? false,
+        });
+        return formatResult(formatDetectArchitecturePatternResponse(result));
+      } catch (error) {
+        logger.error('Tool execution failed', { tool: 'detect_architecture_pattern' });
+        return formatError(error);
+      }
+    }
+  );
+  toolCount++;
+
+  server.tool(
+    'analyze_import_graph',
+    'Analyze import/export dependencies in a codebase. Builds a dependency graph and detects circular dependencies. Essential for understanding code relationships and finding potential issues.',
+    {
+      rootPath: z.string().optional().describe('Root path to analyze (defaults to current working directory)'),
+      includeHidden: z.boolean().optional().default(false).describe('Include hidden files and directories'),
+      maxDepth: z.number().optional().describe('Maximum depth for analysis (1-10)'),
+    },
+    async ({ rootPath, includeHidden, maxDepth }) => {
+      try {
+        const result = await analyzeImportGraph({
+          rootPath,
+          includeHidden: includeHidden ?? false,
+          maxDepth: maxDepth ? Math.min(Math.max(1, maxDepth), 10) : undefined,
+        });
+        return formatResult(formatAnalyzeImportGraphResponse(result));
+      } catch (error) {
+        logger.error('Tool execution failed', { tool: 'analyze_import_graph' });
         return formatError(error);
       }
     }

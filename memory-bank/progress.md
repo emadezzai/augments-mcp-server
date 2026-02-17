@@ -31,6 +31,11 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 ### Codebase Tools
 - [x] **semantic_code_search** - Semantic search in code (IMPLEMENTED: `src/tools/codebase/semantic-code-search.ts`)
 - [x] **analyze_codebase_structure** - Analyze project structure (IMPLEMENTED: `src/tools/codebase/analyze-codebase-structure.ts`)
+- [x] **get_file_context** - Get file context with imports/exports (IMPLEMENTED: `src/tools/codebase/get-file-context.ts`)
+- [x] **find_related_files** - Find related files by imports (IMPLEMENTED: `src/tools/codebase/find-related-files.ts`)
+- [x] **extract_module_api** - Extract public API from modules (IMPLEMENTED: `src/tools/codebase/extract-module-api.ts`)
+- [x] **detect_architecture_pattern** - Detect architecture patterns (IMPLEMENTED: `src/tools/codebase/detect-architecture-pattern.ts`)
+- [x] **analyze_import_graph** - Analyze import/export dependencies (IMPLEMENTED: `src/tools/codebase/analyze-import-graph.ts`)
 
 ### Cache Management
 - [x] **check_framework_updates** - Check for updates (NEW)
@@ -45,7 +50,7 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 
 ### MCP Server
 - [x] HTTP transport
-- [x] 16 tools exposed and registered
+- [x] 19 tools exposed and registered
 - [x] Vercel deployment ready
 - [x] Auto-start LaunchAgent for macOS (NEW)
 
@@ -55,15 +60,15 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 
 ### TOOLS-ROADMAP.md Implementation
 
-| Tool                          | Status　　　　 | Priority |
+| Tool                          | Status          | Priority |
 | -------------------------------| ----------------| ----------|
-| `semantic_code_search`        | ✅ Complete　　 | High     |
-| `analyze_codebase_structure`  | ✅ Complete　　 | High     |
-| `get_file_context`            | ✅ Complete　　 | High     |
-| `find_related_files`          | ✅ Complete    | High     |
-| `extract_module_api`          | 🔄 Not Started | Medium   |
-| `detect_architecture_pattern` | 🔄 Not Started | Medium   |
-| `analyze_import_graph`        | 🔄 Not Started | Medium   |
+| `semantic_code_search`        | ✅ Complete     | High     |
+| `analyze_codebase_structure`  | ✅ Complete     | High     |
+| `get_file_context`            | ✅ Complete     | High     |
+| `find_related_files`          | ✅ Complete     | High     |
+| `extract_module_api`          | ✅ Complete     | Medium   |
+| `detect_architecture_pattern` | ✅ Complete     | Medium   |
+| `analyze_import_graph`        | ✅ Complete     | Medium   |
 | `find_pattern_usage`          | 🔄 Not Started | Medium   |
 | `identify_public_interfaces`  | 🔄 Not Started | Medium   |
 | `generate_code_summary`       | 🔄 Not Started | Low      |
@@ -78,20 +83,17 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 ## ❌ What's Left to Build
 
 ### Medium Priority
-4. **extract_module_api** - Extract module API
-5. **detect_architecture_pattern** - Detect patterns
-6. **analyze_import_graph** - Dependency analysis
 7. **find_pattern_usage** - Pattern search
 8. **identify_public_interfaces** - Public API detection
 9. **generate_code_summary** - Code summarization
 
 ### Low Priority
-10. **find_circular_dependencies** - Circular dep detection
-11. **understand_component_tree** - Component hierarchy
-12. **analyze_state_flow** - State flow analysis
-13. **search_by_functionality** - Functional search
-14. **locate_test_files** - Test file finder
-15. **analyze_change_impact** - Impact analysis
+11. **find_circular_dependencies** - Circular dep detection
+12. **understand_component_tree** - Component hierarchy
+13. **analyze_state_flow** - State flow analysis
+14. **search_by_functionality** - Functional search
+15. **locate_test_files** - Test file finder
+16. **analyze_change_impact** - Impact analysis
 
 ---
 
@@ -123,6 +125,7 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 - File-based caching
 - Optional AI providers (Minimax, Chutes)
 - TypeScript definition focus
+- 19 MCP tools available
 
 ### v4.0.0
 - Initial v4 release
@@ -138,10 +141,9 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 
 ## 🎯 Next Release Goals
 
-1. **Complete get_file_context** - High priority
-2. **Complete find_related_files** - High priority
-3. **Improve query parser** - Medium priority
-4. **Add more tests** - Ongoing
+1. **Complete find_pattern_usage** - Medium priority
+2. **Improve query parser** - Medium priority
+3. **Add more tests** - Ongoing
 
 ---
 
