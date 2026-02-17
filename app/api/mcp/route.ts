@@ -13,7 +13,8 @@ import { getCache } from '@/cache';
 import { getGitHubProvider } from '@/providers/github';
 import { getWebsiteProvider } from '@/providers/website';
 import { getApiContext, searchApis, getVersionInfo, formatApiContextResponse, formatSearchApisResponse, formatVersionInfoResponse } from '@/tools/v4';
-import { searchFrameworks, getFrameworkInfo, getFrameworkDocs, getFrameworkContext } from '@/tools';
+import { searchFrameworks, getFrameworkInfo, getFrameworkDocs, getFrameworkContext, listAvailableFrameworks, getRegistryStats, checkFrameworkUpdates, refreshFrameworkCache, getCacheStats } from '@/tools';
+import { analyzeCodebaseStructure, formatCodebaseStructureResponse, semanticCodeSearch, formatSemanticSearchResponse, getFileContext, formatFileContextResponse, findRelatedFiles, formatFindRelatedFilesResponse } from '@/tools/codebase';
 import { getLogger } from '@/utils/logger';
 
 const logger = getLogger('api:mcp');
@@ -46,14 +47,14 @@ export async function GET(request: Request) {
 
   if (!isMcpRequest) {
     // Return health check response for non-MCP requests
-    return new Response(
+        return new Response(
       JSON.stringify({
         name: 'augments-mcp-server',
         version: SERVER_VERSION,
         status: 'healthy',
         transport: 'streamable-http',
         endpoint: '/api/mcp',
-        tools: 7,
+        tools: 16,
       }),
       {
         status: 200,
@@ -348,6 +349,154 @@ async function createServer(): Promise<McpServer> {
     async ({ frameworks, task_description }) => {
       const result = await getFrameworkContext(registry, cache, { frameworks, task_description });
       return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  // Tool 8: list_frameworks
+  server.tool(
+    'list_frameworks',
+    'List all available frameworks, optionally filtered by category.',
+    {
+      category: z.enum(['web', 'backend', 'mobile', 'ai-ml', 'design', 'tools', 'database', 'devops', 'testing', 'state-management']).optional().describe('Filter by category'),
+    },
+    async ({ category }) => {
+      const result = await listAvailableFrameworks(registry, { category });
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  // Tool 9: get_registry_stats
+  server.tool(
+    'get_registry_stats',
+    'Get statistics about the framework registry.',
+    {},
+    async () => {
+      const result = await getRegistryStats(registry);
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  // Tool 10: check_framework_updates
+  server.tool(
+    'check_framework_updates',
+    'Check if framework documentation has been updated since last cache.',
+    {
+      framework: z.string().min(1).describe('Framework name to check for updates'),
+    },
+    async ({ framework }) => {
+      const result = await checkFrameworkUpdates(registry, cache, githubProvider, { framework });
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  // Tool 11: refresh_cache
+  server.tool(
+    'refresh_cache',
+    'Refresh cached documentation for frameworks.',
+    {
+      framework: z.string().optional().describe('Specific framework to refresh, or omit for all frameworks'),
+      force: z.boolean().default(false).describe('Force refresh even if cache is still valid'),
+    },
+    async ({ framework, force }) => {
+      const result = await refreshFrameworkCache(registry, cache, githubProvider, websiteProvider, { framework, force });
+      return { content: [{ type: 'text', text: result }] };
+    }
+  );
+
+  // Tool 12: get_cache_stats
+  server.tool(
+    'get_cache_stats',
+    'Get comprehensive cache statistics.',
+    {},
+    async () => {
+      const result = await getCacheStats(registry, cache);
+      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+    }
+  );
+
+  // Tool 13: analyze_codebase_structure
+  server.tool(
+    'analyze_codebase_structure',
+    'Analyze the complete structure of a project codebase. Provides file counts, language breakdown, directory tree, entry points, and configuration files.',
+    {
+      rootPath: z.string().optional().describe('Root directory to analyze'),
+      includeHidden: z.boolean().default(false).describe('Include hidden files'),
+      maxDepth: z.number().min(1).max(10).default(5).describe('Maximum depth for directory tree'),
+    },
+    async ({ rootPath, includeHidden, maxDepth }) => {
+      const result = await analyzeCodebaseStructure({
+        rootPath,
+        includeHidden: includeHidden ?? false,
+        maxDepth: maxDepth ?? 5,
+      });
+      return { content: [{ type: 'text', text: formatCodebaseStructureResponse(result) }] };
+    }
+  );
+
+  // Tool 14: semantic_code_search
+  server.tool(
+    'semantic_code_search',
+    'Search code semantically in large codebases. Understands meaning, not just text. Use for finding code by concept.',
+    {
+      query: z.string().min(1).describe('Natural language search query'),
+      rootPath: z.string().optional().describe('Root directory to search'),
+      filePattern: z.string().optional().describe('File pattern to match'),
+      maxResults: z.number().min(1).max(100).default(10).describe('Maximum number of results'),
+      contextLines: z.number().min(0).max(20).default(3).describe('Number of context lines'),
+    },
+    async ({ query, rootPath, filePattern, maxResults, contextLines }) => {
+      const result = await semanticCodeSearch({
+        query,
+        rootPath,
+        filePattern,
+        maxResults: maxResults ?? 10,
+        contextLines: contextLines ?? 3,
+      });
+      return { content: [{ type: 'text', text: formatSemanticSearchResponse(result) }] };
+    }
+  );
+
+  // Tool 15: get_file_context
+  server.tool(
+    'get_file_context',
+    'Get context for a specific file including imports, exports, functions, and classes. Designed for understanding code quickly.',
+    {
+      filePath: z.string().min(1).describe('Path to the file to analyze'),
+      focusFunction: z.string().optional().describe('Focus on a specific function'),
+      focusLine: z.number().optional().describe('Focus on a specific line number'),
+      contextLines: z.number().min(1).max(100).default(50).describe('Number of context lines around focus'),
+      rootPath: z.string().optional().describe('Root path for resolving imports'),
+    },
+    async ({ filePath, focusFunction, focusLine, contextLines, rootPath }) => {
+      const result = await getFileContext({
+        filePath,
+        focusFunction,
+        focusLine,
+        contextLines: contextLines ?? 50,
+        rootPath,
+      });
+      return { content: [{ type: 'text', text: formatFileContextResponse(result) }] };
+    }
+  );
+
+  // Tool 16: find_related_files
+  server.tool(
+    'find_related_files',
+    'Find files related to a given file based on imports, exports, and other relationships.',
+    {
+      filePath: z.string().min(1).describe('Path to the file to find relations for'),
+      relationTypes: z.array(z.enum(['imports', 'exports', 'inherits', 'calls', 'tests'])).optional().describe('Types of relations to find'),
+      rootPath: z.string().optional().describe('Root path for resolving imports'),
+      maxDepth: z.number().min(1).max(10).optional().describe('Maximum depth for indirect relations'),
+    },
+    async ({ filePath, relationTypes, rootPath, maxDepth }) => {
+      const result = await findRelatedFiles({
+        filePath,
+        relationTypes: relationTypes ?? ['imports'],
+        rootPath,
+        maxDepth: maxDepth ?? 3,
+      });
+      return { content: [{ type: 'text', text: formatFindRelatedFilesResponse(result) }] };
     }
   );
 

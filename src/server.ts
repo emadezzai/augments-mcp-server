@@ -48,6 +48,8 @@ import {
 import {
   semanticCodeSearch,
   formatSemanticSearchResponse,
+  analyzeCodebaseStructure,
+  formatCodebaseStructureResponse,
 } from '@/tools/codebase';
 import { FrameworkCategories } from '@/types';
 import { getLogger } from '@/utils/logger';
@@ -305,6 +307,30 @@ export async function getServer(): Promise<McpServer> {
         return formatResult(formatSemanticSearchResponse(result));
       } catch (error) {
         logger.error('Tool execution failed', { tool: 'semantic_code_search', error });
+        return formatError(error);
+      }
+    }
+  );
+  toolCount++;
+
+  server.tool(
+    'analyze_codebase_structure',
+    'Analyze the complete structure of a project codebase. Provides file counts, language breakdown, directory tree, entry points, and configuration files. Essential for understanding large projects.',
+    {
+      rootPath: z.string().optional().describe('Root directory to analyze (defaults to current working directory)'),
+      includeHidden: z.boolean().default(false).describe('Include hidden files and directories (starting with .)'),
+      maxDepth: z.number().min(1).max(10).default(5).describe('Maximum depth for directory tree'),
+    },
+    async ({ rootPath, includeHidden, maxDepth }) => {
+      try {
+        const result = await analyzeCodebaseStructure({
+          rootPath,
+          includeHidden: includeHidden ?? false,
+          maxDepth: maxDepth ?? 5,
+        });
+        return formatResult(formatCodebaseStructureResponse(result));
+      } catch (error) {
+        logger.error('Tool execution failed', { tool: 'analyze_codebase_structure', error });
         return formatError(error);
       }
     }
