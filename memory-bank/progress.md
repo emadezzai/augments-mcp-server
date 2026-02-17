@@ -22,7 +22,7 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 ### Documentation Access (1 tool, available by default)
 - [x] **get_framework_docs** - Fetch documentation
 
-### Codebase Tools (8 tools, available by default)
+### Codebase Tools (10 tools, available by default)
 - [x] **semantic_code_search** - Semantic search in code
 - [x] **analyze_codebase_structure** - Analyze project structure
 - [x] **get_file_context** - Get file context with imports/exports (NOW REGISTERED)
@@ -31,6 +31,8 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 - [x] **detect_architecture_pattern** - Detect architecture patterns
 - [x] **analyze_import_graph** - Analyze import/export dependencies
 - [x] **find_pattern_usage** - Search for design patterns in code
+- [x] **identify_public_interfaces** - Identify public vs internal exports (NOW IMPLEMENTED & REGISTERED)
+- [x] **generate_code_summary** - Generate code summaries (NOW IMPLEMENTED & REGISTERED)
 
 ### Local-First Architecture
 - [x] File-based caching (`.cache/`)
@@ -40,7 +42,7 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 
 ### MCP Server
 - [x] HTTP transport
-- [x] 14 tools exposed and registered by default
+- [x] 16 tools exposed and registered by default
 - [x] Vercel deployment ready
 - [x] Auto-start LaunchAgent for macOS
 
@@ -64,8 +66,12 @@ These tools are available when `LEGACY_TOOLS_ENABLED=true`:
 ## ❌ What's Left to Build
 
 ### Medium Priority
-1. **identify_public_interfaces** - Public API detection
-2. **generate_code_summary** - Code summarization
+1. **find_circular_dependencies** - Circular dep detection
+2. **understand_component_tree** - Component hierarchy
+3. **analyze_state_flow** - State flow analysis
+4. **search_by_functionality** - Functional search
+5. **locate_test_files** - Test file finder
+6. **analyze_change_impact** - Impact analysis
 
 ### Low Priority
 3. **find_circular_dependencies** - Circular dep detection
@@ -105,7 +111,7 @@ These tools are available when `LEGACY_TOOLS_ENABLED=true`:
 - File-based caching
 - Optional AI providers (Minimax, Chutes)
 - TypeScript definition focus
-- 14 MCP tools available by default (plus 8 legacy tools behind env var)
+- 16 MCP tools available by default (plus 8 legacy tools behind env var)
 
 ### v4.0.0
 - Initial v4 release
@@ -132,4 +138,4 @@ These tools are available when `LEGACY_TOOLS_ENABLED=true`:
 - All features work without paid services
 - TypeScript definitions are the source of truth
 - Minimal context is the goal for all tools
-- Default tool count is 14 (updated from 12)
+- Default tool count is 16 (updated from 14)

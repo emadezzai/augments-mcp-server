@@ -62,6 +62,10 @@ import {
   formatAnalyzeImportGraphResponse,
   findPatternUsage,
   formatPatternUsageResponse,
+  identifyPublicInterfaces,
+  formatIdentifyPublicInterfacesResponse,
+  generateCodeSummary,
+  formatCodeSummaryResponse,
 } from '@/tools/codebase';
 import { FrameworkCategories } from '@/types';
 import { getLogger } from '@/utils/logger';
@@ -493,6 +497,56 @@ export async function getServer(): Promise<McpServer> {
         return formatResult(formatPatternUsageResponse(result));
       } catch (error) {
         logger.error('Tool execution failed', { tool: 'find_pattern_usage' });
+        return formatError(error);
+      }
+    }
+  );
+  toolCount++;
+
+  // Identify Public Interfaces
+  server.tool(
+    'identify_public_interfaces',
+    'Identify public interfaces and exports in a package/module. Distinguishes between public, internal, and type exports.',
+    {
+      packagePath: z.string().min(1).describe('Path to the package or module to analyze'),
+      rootPath: z.string().optional().describe('Root path for resolving imports'),
+    },
+    async ({ packagePath, rootPath }) => {
+      try {
+        const result = await identifyPublicInterfaces({
+          packagePath,
+          rootPath,
+        });
+        return formatResult(formatIdentifyPublicInterfacesResponse(result));
+      } catch (error) {
+        logger.error('Tool execution failed', { tool: 'identify_public_interfaces' });
+        return formatError(error);
+      }
+    }
+  );
+  toolCount++;
+
+  // Generate Code Summary
+  server.tool(
+    'generate_code_summary',
+    'Generate a summary of code in a file or directory. Extracts key functions, classes, and main purpose.',
+    {
+      path: z.string().min(1).describe('Path to file or directory to summarize'),
+      maxLength: z.number().min(50).max(1000).optional().default(500).describe('Maximum length of summary'),
+      includeFunctions: z.boolean().optional().default(true).describe('Include key functions'),
+      includeClasses: z.boolean().optional().default(true).describe('Include key classes'),
+    },
+    async ({ path, maxLength, includeFunctions, includeClasses }) => {
+      try {
+        const result = await generateCodeSummary({
+          path,
+          maxLength,
+          includeFunctions,
+          includeClasses,
+        });
+        return formatResult(formatCodeSummaryResponse(result));
+      } catch (error) {
+        logger.error('Tool execution failed', { tool: 'generate_code_summary' });
         return formatError(error);
       }
     }

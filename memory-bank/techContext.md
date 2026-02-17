@@ -167,7 +167,7 @@ The server exposes **14 tools by default** (plus 8 legacy tools behind env var):
 5. `get_framework_info` - Get framework metadata
 6. `get_framework_docs` - Fetch documentation for a framework
 
-### Codebase Tools (8) - For large codebases (50k+ lines)
+### Codebase Tools (10) - For large codebases (50k+ lines)
 7. `semantic_code_search` - Search code semantically in large codebases
 8. `analyze_codebase_structure` - Analyze the complete structure of a project codebase
 9. `get_file_context` - Get context for a specific file
@@ -176,6 +176,8 @@ The server exposes **14 tools by default** (plus 8 legacy tools behind env var):
 12. `detect_architecture_pattern` - Detect design patterns and architecture styles
 13. `analyze_import_graph` - Analyze import/export dependencies
 14. `find_pattern_usage` - Search for specific design patterns in code
+15. `identify_public_interfaces` - Identify public vs internal exports in packages
+16. `generate_code_summary` - Generate summaries of code files or directories
 
 ### Legacy Tools (8) - Behind LEGACY_TOOLS_ENABLED env var
 - `list_available_frameworks` - List all available frameworks

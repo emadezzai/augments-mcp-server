@@ -30,12 +30,14 @@ Deliver minimal, accurate API information to AI assistants instead of dumping en
    - Works without API keys
 
 5. **Codebase Analysis Tools** (for large projects 50k+ lines)
-   - Semantic code search
-   - Architecture pattern detection
-   - Import graph analysis
-   - Pattern usage search
-   - File context analysis
-   - Related files discovery
+    - Semantic code search
+    - Architecture pattern detection
+    - Import graph analysis
+    - Pattern usage search
+    - File context analysis
+    - Related files discovery
+    - Public interface identification
+    - Code summarization
 
 ## Target Users
 
@@ -49,7 +51,7 @@ Current: **4.1.0**
 
 ## Tool Count
 
-- **Default tools**: 14
+- **Default tools**: 16
 - **Legacy tools** (behind env var): 8
 
 ## Repository

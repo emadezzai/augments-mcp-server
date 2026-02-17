@@ -14,7 +14,7 @@ import { getGitHubProvider } from '@/providers/github';
 import { getWebsiteProvider } from '@/providers/website';
 import { getApiContext, searchApis, getVersionInfo, formatApiContextResponse, formatSearchApisResponse, formatVersionInfoResponse } from '@/tools/v4';
 import { searchFrameworks, getFrameworkInfo, getFrameworkDocs, getFrameworkContext, listAvailableFrameworks, getRegistryStats, checkFrameworkUpdates, refreshFrameworkCache, getCacheStats } from '@/tools';
-import { analyzeCodebaseStructure, formatCodebaseStructureResponse, semanticCodeSearch, formatSemanticSearchResponse, getFileContext, formatFileContextResponse, findRelatedFiles, formatFindRelatedFilesResponse, extractModuleApi, formatExtractModuleApiResponse, detectArchitecturePattern, formatDetectArchitecturePatternResponse, analyzeImportGraph, formatAnalyzeImportGraphResponse, findPatternUsage, formatPatternUsageResponse } from '@/tools/codebase';
+import { analyzeCodebaseStructure, formatCodebaseStructureResponse, semanticCodeSearch, formatSemanticSearchResponse, getFileContext, formatFileContextResponse, findRelatedFiles, formatFindRelatedFilesResponse, extractModuleApi, formatExtractModuleApiResponse, detectArchitecturePattern, formatDetectArchitecturePatternResponse, analyzeImportGraph, formatAnalyzeImportGraphResponse, findPatternUsage, formatPatternUsageResponse, identifyPublicInterfaces, formatIdentifyPublicInterfacesResponse, generateCodeSummary, formatCodeSummaryResponse } from '@/tools/codebase';
 import { getLogger } from '@/utils/logger';
 
 const logger = getLogger('api:mcp');
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
         status: 'healthy',
         transport: 'streamable-http',
         endpoint: '/api/mcp',
-        tools: 20,
+        tools: 16,
       }),
       {
         status: 200,
@@ -500,7 +500,45 @@ async function createServer(): Promise<McpServer> {
     }
   );
 
-  // Tool 17: extract_module_api
+  // Tool 17: identify_public_interfaces
+  server.tool(
+    'identify_public_interfaces',
+    'Identify public vs internal exports in packages/modules. Distinguishes between public, internal, and type exports. Detects re-exports and private exports.',
+    {
+      packagePath: z.string().min(1).describe('Path to the package or module to analyze'),
+      rootPath: z.string().optional().describe('Root path for resolving imports'),
+    },
+    async ({ packagePath, rootPath }) => {
+      const result = await identifyPublicInterfaces({
+        packagePath,
+        rootPath,
+      });
+      return { content: [{ type: 'text', text: formatIdentifyPublicInterfacesResponse(result) }] };
+    }
+  );
+
+  // Tool 18: generate_code_summary
+  server.tool(
+    'generate_code_summary',
+    'Generate summaries of code files or directories. Extracts key functions and classes, infers main purpose from code patterns. Supports both individual files and entire directories.',
+    {
+      path: z.string().min(1).describe('Path to file or directory to summarize'),
+      maxLength: z.number().min(50).max(1000).optional().default(500).describe('Maximum length of summary'),
+      includeFunctions: z.boolean().optional().default(true).describe('Include key functions'),
+      includeClasses: z.boolean().optional().default(true).describe('Include key classes'),
+    },
+    async ({ path, maxLength, includeFunctions, includeClasses }) => {
+      const result = await generateCodeSummary({
+        path,
+        maxLength: maxLength ?? 500,
+        includeFunctions: includeFunctions ?? true,
+        includeClasses: includeClasses ?? true,
+      });
+      return { content: [{ type: 'text', text: formatCodeSummaryResponse(result) }] };
+    }
+  );
+
+  // Tool 19: extract_module_api
   server.tool(
     'extract_module_api',
     'Extract the public API from a module including exports, types, interfaces, and dependencies. Essential for understanding module contracts.',
@@ -519,7 +557,7 @@ async function createServer(): Promise<McpServer> {
     }
   );
 
-  // Tool 18: detect_architecture_pattern
+  // Tool 20: detect_architecture_pattern
   server.tool(
     'detect_architecture_pattern',
     'Detect design patterns and architecture styles used in a codebase. Analyzes directory structure, file naming, and code patterns to identify MVC, Clean Architecture, DDD, Hexagonal, Microservices, etc.',
@@ -536,7 +574,7 @@ async function createServer(): Promise<McpServer> {
     }
   );
 
-  // Tool 19: analyze_import_graph
+  // Tool 21: analyze_import_graph
   server.tool(
     'analyze_import_graph',
     'Analyze import/export dependencies in a codebase. Builds a dependency graph and detects circular dependencies. Essential for understanding code relationships and finding potential issues.',

@@ -96,3 +96,23 @@ export {
   type FindPatternUsageOutput,
   type PatternOccurrence,
 } from './find-pattern-usage';
+
+// Identify Public Interfaces
+export {
+  identifyPublicInterfaces,
+  formatIdentifyPublicInterfacesResponse,
+  IdentifyPublicInterfacesInputSchema,
+  type IdentifyPublicInterfacesInput,
+  type IdentifyPublicInterfacesOutput,
+} from './identify-public-interfaces';
+
+// Generate Code Summary
+export {
+  generateCodeSummary,
+  formatCodeSummaryResponse,
+  GenerateCodeSummaryInputSchema,
+  type GenerateCodeSummaryInput,
+  type FunctionSummary,
+  type ClassSummary,
+  type CodeSummaryOutput,
+} from './generate-code-summary';

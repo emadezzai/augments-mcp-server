@@ -94,7 +94,9 @@ src/tools/ (Tool Implementations)
         ├── extract-module-api.ts
         ├── detect-architecture-pattern.ts
         ├── analyze-import-graph.ts
-        └── find-pattern-usage.ts
+        ├── find-pattern-usage.ts
+        ├── identify-public-interfaces.ts
+        └── generate-code-summary.ts
     ↓
 src/core/ (Core Processing)
     ├── query-parser.ts
@@ -198,6 +200,6 @@ server.tool(
 
 ## Current Tool Count
 
-- **Default tools**: 14
+- **Default tools**: 16
 - **Legacy tools** (behind env var): 8
-- **Total implemented**: 22 tools
+- **Total implemented**: 24 tools

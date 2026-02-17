@@ -39,8 +39,10 @@ The project is in active development. Version 4.1.0 is released and stable.
 - ✅ `detect_architecture_pattern` - Detect design patterns
 - ✅ `analyze_import_graph` - Analyze import/export dependencies, detect circular dependencies
 - ✅ `find_pattern_usage` - Search for design patterns in code
+- ✅ `identify_public_interfaces` - Identify public vs internal exports (NOW IMPLEMENTED & REGISTERED)
+- ✅ `generate_code_summary` - Generate code summaries for files/folders (NOW IMPLEMENTED & REGISTERED)
 
-**14 Tools Registered in MCP Server by Default:**
+**16 Tools Registered in MCP Server by Default:**
 1. `get_api_context` - Query TypeScript definitions from npm (PRIMARY)
 2. `search_apis` - Search APIs across frameworks (PRIMARY)
 3. `get_version_info` - Version comparison from npm (PRIMARY)
@@ -55,6 +57,8 @@ The project is in active development. Version 4.1.0 is released and stable.
 12. `detect_architecture_pattern` - Detect architecture patterns
 13. `analyze_import_graph` - Analyze import/export dependencies
 14. `find_pattern_usage` - Search for design patterns
+15. `identify_public_interfaces` - Identify public vs internal exports
+16. `generate_code_summary` - Generate code summaries
 
 **Legacy Tools (behind LEGACY_TOOLS_ENABLED):**
 - `list_available_frameworks`
@@ -68,15 +72,9 @@ The project is in active development. Version 4.1.0 is released and stable.
 
 ## Next Steps
 
-1. **Implement `identify_public_interfaces` tool**
-   - Public API detection for packages
-
-2. **Implement `generate_code_summary` tool**
-   - Code summarization for files/folders
-
-3. **Improve query parser**
-   - Better framework detection
-   - More accurate concept extraction
+1. **Improve query parser**
+    - Better framework detection
+    - More accurate concept extraction
 
 ## Important Patterns & Preferences
 

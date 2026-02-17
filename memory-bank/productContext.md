@@ -82,7 +82,7 @@ The server provides **14 tools by default**:
 - `get_framework_info` - Framework details
 - `get_framework_docs` - Full documentation
 
-### Codebase (8)
+### Codebase (10)
 - `semantic_code_search` - Semantic code search
 - `analyze_codebase_structure` - Project structure
 - `get_file_context` - File context with imports/exports
@@ -91,6 +91,8 @@ The server provides **14 tools by default**:
 - `detect_architecture_pattern` - Architecture detection
 - `analyze_import_graph` - Dependency analysis
 - `find_pattern_usage` - Pattern search
+- `identify_public_interfaces` - Public API detection
+- `generate_code_summary` - Code summarization
 
 ### Legacy (8 behind env var)
 - Additional tools for backward compatibility
