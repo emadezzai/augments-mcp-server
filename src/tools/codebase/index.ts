@@ -86,3 +86,13 @@ export {
   type DependencyNode,
   type CircularDependency,
 } from './analyze-import-graph';
+
+// Find Pattern Usage
+export {
+  findPatternUsage,
+  formatPatternUsageResponse,
+  FindPatternUsageInputSchema,
+  type FindPatternUsageInput,
+  type FindPatternUsageOutput,
+  type PatternOccurrence,
+} from './find-pattern-usage';

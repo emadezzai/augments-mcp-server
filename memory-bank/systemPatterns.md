@@ -62,7 +62,7 @@
 
 ### 4. MCP Tool Structure
 - **Pattern**: Strategy Pattern
-- **Location**: `src/tools/v4/`
+- **Location**: `src/tools/codebase/`
 - **Each tool**: Independent strategy with consistent interface
 
 ### 5. Framework Registry
@@ -84,13 +84,24 @@ src/tools/ (Tool Implementations)
     │   └── get-version-info.ts
     ├── discovery.ts (Framework Discovery)
     ├── documentation.ts (Docs Access)
-    └── cache-management.ts
+    ├── context.ts (Context Enhancement)
+    ├── cache-management.ts (Cache Tools)
+    └── codebase/ (Codebase Analysis Tools)
+        ├── semantic-code-search.ts
+        ├── analyze-codebase-structure.ts
+        ├── get-file-context.ts (REGISTERED)
+        ├── find-related-files.ts (REGISTERED)
+        ├── extract-module-api.ts
+        ├── detect-architecture-pattern.ts
+        ├── analyze-import-graph.ts
+        └── find-pattern-usage.ts
     ↓
 src/core/ (Core Processing)
     ├── query-parser.ts
     ├── type-fetcher.ts
     ├── type-parser.ts
-    └── example-extractor.ts
+    ├── example-extractor.ts
+    └── version-registry.ts
     ↓
 src/cache/ (Caching Layer)
     ├── unified-cache.ts
@@ -154,3 +165,39 @@ Local Cache
 | GitHub | Code examples | Optional |
 | Minimax | Query parsing | Optional |
 | Chutes | Examples enhancement | Optional |
+
+## Tool Registration Pattern
+
+When adding a new tool, follow this pattern:
+
+1. **Implement** in `src/tools/codebase/` or appropriate location
+2. **Export** from `src/tools/codebase/index.ts`
+3. **Export** from `src/tools/index.ts`
+4. **Import** in `src/server.ts`
+5. **Register** using `server.tool()` method
+6. **Document** in memory bank files
+
+Example:
+```typescript
+// src/server.ts
+import { getFileContext, formatFileContextResponse } from '@/tools/codebase';
+
+server.tool(
+  'get_file_context',
+  'Get context for a specific file...',
+  {
+    filePath: z.string().min(1).describe('Path to file'),
+    // ... other params
+  },
+  async ({ filePath, ... }) => {
+    const result = await getFileContext({ filePath, ... });
+    return formatResult(formatFileContextResponse(result));
+  }
+);
+```
+
+## Current Tool Count
+
+- **Default tools**: 14
+- **Legacy tools** (behind env var): 8
+- **Total implemented**: 22 tools

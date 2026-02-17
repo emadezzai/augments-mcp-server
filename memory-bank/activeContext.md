@@ -21,52 +21,62 @@ The project is in active development. Version 4.1.0 is released and stable.
    - Any npm package with types works automatically
    - No manual framework registration needed
 
+4. **Tool Registration Complete**
+   - Added `get_file_context` to server.ts
+   - Added `find_related_files` to server.ts
+   - Total tools now: 14 (up from 12)
+
 ## Current Work Focus
 
-### Primary Focus: TOOLS-ROADMAP.md Implementation
-
-The project has a roadmap for adding tools for large codebases (50k+ lines). See `TOOLS-ROADMAP.md` for details.
+### All Codebase Tools Now Registered ✅
 
 **Completed:**
-- ✅ `semantic_code_search` - Search code by meaning, not just text (IMPLEMENTED in `src/tools/codebase/semantic-code-search.ts`)
-- ✅ `analyze_codebase_structure` - Analyze project structure (IMPLEMENTED in `src/tools/codebase/analyze-codebase-structure.ts`)
-- ✅ `get_file_context` - Get file context with imports/exports (IMPLEMENTED in `src/tools/codebase/get-file-context.ts`)
-- ✅ `find_related_files` - Find related files by imports (IMPLEMENTED in `src/tools/codebase/find-related-files.ts`)
-- ✅ `extract_module_api` - Extract public API from modules (IMPLEMENTED in `src/tools/codebase/extract-module-api.ts`)
-- ✅ `detect_architecture_pattern` - Detect design patterns (IMPLEMENTED in `src/tools/codebase/detect-architecture-pattern.ts`)
-- ✅ `analyze_import_graph` - Dependency graph analysis (IMPLEMENTED in `src/tools/codebase/analyze-import-graph.ts`)
+- ✅ `semantic_code_search` - Search code by meaning, not just text
+- ✅ `analyze_codebase_structure` - Analyze project structure
+- ✅ `get_file_context` - Get file context with imports, exports, functions, classes (NOW REGISTERED)
+- ✅ `find_related_files` - Find related files by imports/exports (NOW REGISTERED)
+- ✅ `extract_module_api` - Extract public API from modules
+- ✅ `detect_architecture_pattern` - Detect design patterns
+- ✅ `analyze_import_graph` - Analyze import/export dependencies, detect circular dependencies
+- ✅ `find_pattern_usage` - Search for design patterns in code
 
-**All 19 Tools Registered in MCP Server:**
-The following tools are now registered and accessible via MCP at `/api/mcp`:
-1. `get_api_context` - Query TypeScript definitions from npm
-2. `search_apis` - Search APIs across frameworks
-3. `get_version_info` - Version comparison from npm
-4. `search_frameworks` - Search frameworks
-5. `get_framework_info` - Framework details
-6. `get_framework_docs` - Documentation
-7. `get_framework_context` - Multi-framework context
-8. `list_frameworks` - List frameworks by category
-9. `get_registry_stats` - Registry statistics
-10. `check_framework_updates` - Check for updates
-11. `refresh_cache` - Refresh cache
-12. `get_cache_stats` - Cache statistics
-13. `analyze_codebase_structure` - Project structure analysis
-14. `semantic_code_search` - Semantic code search
-15. `get_file_context` - File context with imports, exports, functions, classes
-16. `find_related_files` - Find related files by imports/exports
-17. `extract_module_api` - Extract public API from modules
-18. `detect_architecture_pattern` - Detect architecture patterns (MVC, DDD, Clean Architecture, etc.)
-19. `analyze_import_graph` - Analyze import/export dependencies, detect circular dependencies
+**14 Tools Registered in MCP Server by Default:**
+1. `get_api_context` - Query TypeScript definitions from npm (PRIMARY)
+2. `search_apis` - Search APIs across frameworks (PRIMARY)
+3. `get_version_info` - Version comparison from npm (PRIMARY)
+4. `search_frameworks` - Search frameworks (ALTERNATIVE)
+5. `get_framework_info` - Framework details (ALTERNATIVE)
+6. `get_framework_docs` - Documentation (ALTERNATIVE)
+7. `semantic_code_search` - Semantic code search
+8. `analyze_codebase_structure` - Project structure analysis
+9. `get_file_context` - Get file context (NEWLY REGISTERED)
+10. `find_related_files` - Find related files (NEWLY REGISTERED)
+11. `extract_module_api` - Extract public API from modules
+12. `detect_architecture_pattern` - Detect architecture patterns
+13. `analyze_import_graph` - Analyze import/export dependencies
+14. `find_pattern_usage` - Search for design patterns
+
+**Legacy Tools (behind LEGACY_TOOLS_ENABLED):**
+- `list_available_frameworks`
+- `get_registry_stats`
+- `get_framework_examples`
+- `search_documentation`
+- `analyze_code_compatibility`
+- `check_framework_updates`
+- `refresh_framework_cache`
+- `get_cache_stats`
 
 ## Next Steps
 
-1. **Implement `analyze_import_graph` tool**
-   - Build dependency graph
-   - Find circular dependencies
+1. **Implement `identify_public_interfaces` tool**
+   - Public API detection for packages
 
-2. **Improve semantic code search**
-   - Better relevance scoring
-   - Support more file types
+2. **Implement `generate_code_summary` tool**
+   - Code summarization for files/folders
+
+3. **Improve query parser**
+   - Better framework detection
+   - More accurate concept extraction
 
 ## Important Patterns & Preferences
 
@@ -91,6 +101,12 @@ The following tools are now registered and accessible via MCP at `/api/mcp`:
 - Update CHANGELOG.md for releases
 - Keep version in package.json
 
+### Tool Registration
+- All new tools MUST be registered in `src/server.ts`
+- Export from `src/tools/codebase/index.ts`
+- Export from `src/tools/index.ts`
+- Register using `server.tool()` method
+
 ## Known Issues / Technical Debt
 
 1. **Query Parser**: Basic implementation, needs improvement
@@ -112,3 +128,4 @@ The following tools are now registered and accessible via MCP at `/api/mcp`:
 - **Minimal context**: Tools should return focused, minimal results
 - **TypeScript truth**: Use .d.ts files as source of truth
 - **Free tier**: Ensure everything works without paid services
+- **Complete registration**: All implemented tools are now registered ✅

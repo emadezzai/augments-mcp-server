@@ -14,7 +14,7 @@ import { getGitHubProvider } from '@/providers/github';
 import { getWebsiteProvider } from '@/providers/website';
 import { getApiContext, searchApis, getVersionInfo, formatApiContextResponse, formatSearchApisResponse, formatVersionInfoResponse } from '@/tools/v4';
 import { searchFrameworks, getFrameworkInfo, getFrameworkDocs, getFrameworkContext, listAvailableFrameworks, getRegistryStats, checkFrameworkUpdates, refreshFrameworkCache, getCacheStats } from '@/tools';
-import { analyzeCodebaseStructure, formatCodebaseStructureResponse, semanticCodeSearch, formatSemanticSearchResponse, getFileContext, formatFileContextResponse, findRelatedFiles, formatFindRelatedFilesResponse, extractModuleApi, formatExtractModuleApiResponse, detectArchitecturePattern, formatDetectArchitecturePatternResponse, analyzeImportGraph, formatAnalyzeImportGraphResponse } from '@/tools/codebase';
+import { analyzeCodebaseStructure, formatCodebaseStructureResponse, semanticCodeSearch, formatSemanticSearchResponse, getFileContext, formatFileContextResponse, findRelatedFiles, formatFindRelatedFilesResponse, extractModuleApi, formatExtractModuleApiResponse, detectArchitecturePattern, formatDetectArchitecturePatternResponse, analyzeImportGraph, formatAnalyzeImportGraphResponse, findPatternUsage, formatPatternUsageResponse } from '@/tools/codebase';
 import { getLogger } from '@/utils/logger';
 
 const logger = getLogger('api:mcp');
@@ -54,7 +54,7 @@ export async function GET(request: Request) {
         status: 'healthy',
         transport: 'streamable-http',
         endpoint: '/api/mcp',
-        tools: 16,
+        tools: 20,
       }),
       {
         status: 200,
@@ -552,6 +552,27 @@ async function createServer(): Promise<McpServer> {
         maxDepth: maxDepth ? Math.min(Math.max(1, maxDepth), 10) : undefined,
       });
       return { content: [{ type: 'text', text: formatAnalyzeImportGraphResponse(result) }] };
+    }
+  );
+
+  // Tool 20: find_pattern_usage
+  server.tool(
+    'find_pattern_usage',
+    'Search for specific design patterns and coding patterns in a codebase. Find where patterns like singleton, observer, factory, middleware, etc. are used.',
+    {
+      pattern: z.string().min(1).describe('Pattern to search for (e.g., "singleton", "observer", "factory", "middleware", "decorator")'),
+      rootPath: z.string().optional().describe('Root directory to search (defaults to current working directory)'),
+      filePattern: z.string().optional().describe('File pattern to match (e.g., "*.ts", "*.{ts,tsx}")'),
+      caseSensitive: z.boolean().optional().default(false).describe('Whether to match case exactly'),
+    },
+    async ({ pattern, rootPath, filePattern, caseSensitive }) => {
+      const result = await findPatternUsage({
+        pattern,
+        rootPath,
+        filePattern,
+        caseSensitive: caseSensitive ?? false,
+      });
+      return { content: [{ type: 'text', text: formatPatternUsageResponse(result) }] };
     }
   );
 

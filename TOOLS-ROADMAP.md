@@ -131,7 +131,7 @@
 }
 ```
 
-#### 7. find_pattern_usage
+#### 7. find_pattern_usage ✅
 **الوصف:** البحث عن استخدام أنماط معينة
 ```typescript
 // المدخلات
@@ -147,6 +147,7 @@
   suggestions: string[]
 }
 ```
+**الحالة:** ✅ مكتمل (IMPLEMENTED: `src/tools/codebase/find-pattern-usage.ts`)
 
 #### 8. analyze_import_graph
 **الوصف:** رسم خريطة للتبعيات

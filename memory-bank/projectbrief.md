@@ -29,6 +29,14 @@ Deliver minimal, accurate API information to AI assistants instead of dumping en
    - Local caching (memory + file-based)
    - Works without API keys
 
+5. **Codebase Analysis Tools** (for large projects 50k+ lines)
+   - Semantic code search
+   - Architecture pattern detection
+   - Import graph analysis
+   - Pattern usage search
+   - File context analysis
+   - Related files discovery
+
 ## Target Users
 
 - Claude Code / Cline users
@@ -38,6 +46,11 @@ Deliver minimal, accurate API information to AI assistants instead of dumping en
 ## Version
 
 Current: **4.1.0**
+
+## Tool Count
+
+- **Default tools**: 14
+- **Legacy tools** (behind env var): 8
 
 ## Repository
 

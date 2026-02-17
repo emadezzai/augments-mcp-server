@@ -67,3 +67,30 @@ Related types:
 2. **Version migration** - "What's different in React 19?"
 3. **Cross-framework research** - "Show me similar hooks in Vue and React"
 4. **Type exploration** - "What does this function return?"
+
+## Current Tool Set
+
+The server provides **14 tools by default**:
+
+### Primary (3)
+- `get_api_context` - Query TypeScript definitions
+- `search_apis` - Search APIs across frameworks
+- `get_version_info` - Version comparison
+
+### Alternative (3)
+- `search_frameworks` - Find frameworks
+- `get_framework_info` - Framework details
+- `get_framework_docs` - Full documentation
+
+### Codebase (8)
+- `semantic_code_search` - Semantic code search
+- `analyze_codebase_structure` - Project structure
+- `get_file_context` - File context with imports/exports
+- `find_related_files` - Find related files
+- `extract_module_api` - Module API extraction
+- `detect_architecture_pattern` - Architecture detection
+- `analyze_import_graph` - Dependency analysis
+- `find_pattern_usage` - Pattern search
+
+### Legacy (8 behind env var)
+- Additional tools for backward compatibility

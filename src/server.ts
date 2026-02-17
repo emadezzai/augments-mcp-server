@@ -50,12 +50,18 @@ import {
   formatSemanticSearchResponse,
   analyzeCodebaseStructure,
   formatCodebaseStructureResponse,
+  getFileContext,
+  formatFileContextResponse,
+  findRelatedFiles,
+  formatFindRelatedFilesResponse,
   extractModuleApi,
   formatExtractModuleApiResponse,
   detectArchitecturePattern,
   formatDetectArchitecturePatternResponse,
   analyzeImportGraph,
   formatAnalyzeImportGraphResponse,
+  findPatternUsage,
+  formatPatternUsageResponse,
 } from '@/tools/codebase';
 import { FrameworkCategories } from '@/types';
 import { getLogger } from '@/utils/logger';
@@ -344,6 +350,60 @@ export async function getServer(): Promise<McpServer> {
   toolCount++;
 
   server.tool(
+    'get_file_context',
+    'Get context for a specific file including imports, exports, functions, and classes. Essential for understanding individual files quickly.',
+    {
+      filePath: z.string().min(1).describe('Path to the file to analyze'),
+      focusFunction: z.string().optional().describe('Focus on a specific function'),
+      focusLine: z.number().optional().describe('Focus on a specific line number'),
+      contextLines: z.number().min(1).max(100).optional().default(50).describe('Number of context lines around focus'),
+      rootPath: z.string().optional().describe('Root path for resolving imports'),
+    },
+    async ({ filePath, focusFunction, focusLine, contextLines, rootPath }) => {
+      try {
+        const result = await getFileContext({
+          filePath,
+          focusFunction,
+          focusLine,
+          contextLines: contextLines ?? 50,
+          rootPath,
+        });
+        return formatResult(formatFileContextResponse(result));
+      } catch (error) {
+        logger.error('Tool execution failed', { tool: 'get_file_context' });
+        return formatError(error);
+      }
+    }
+  );
+  toolCount++;
+
+  server.tool(
+    'find_related_files',
+    'Find files related to a given file based on imports, exports, and other relationships. Essential for understanding code dependencies.',
+    {
+      filePath: z.string().min(1).describe('Path to the file to find relations for'),
+      relationTypes: z.array(z.enum(['imports', 'exports', 'inherits', 'calls', 'tests'])).optional().default(['imports']).describe('Types of relations to find'),
+      rootPath: z.string().optional().describe('Root path for resolving imports'),
+      maxDepth: z.number().min(1).max(10).optional().default(3).describe('Maximum depth for indirect relations'),
+    },
+    async ({ filePath, relationTypes, rootPath, maxDepth }) => {
+      try {
+        const result = await findRelatedFiles({
+          filePath,
+          relationTypes: relationTypes ?? ['imports'],
+          rootPath,
+          maxDepth: maxDepth ?? 3,
+        });
+        return formatResult(formatFindRelatedFilesResponse(result));
+      } catch (error) {
+        logger.error('Tool execution failed', { tool: 'find_related_files' });
+        return formatError(error);
+      }
+    }
+  );
+  toolCount++;
+
+  server.tool(
     'extract_module_api',
     'Extract the public API from a module including exports, types, interfaces, and dependencies. Essential for understanding module contracts and contracts in large codebases.',
     {
@@ -407,6 +467,32 @@ export async function getServer(): Promise<McpServer> {
         return formatResult(formatAnalyzeImportGraphResponse(result));
       } catch (error) {
         logger.error('Tool execution failed', { tool: 'analyze_import_graph' });
+        return formatError(error);
+      }
+    }
+  );
+  toolCount++;
+
+  server.tool(
+    'find_pattern_usage',
+    'Search for specific design patterns and coding patterns in a codebase. Find where patterns like singleton, observer, factory, middleware, etc. are used.',
+    {
+      pattern: z.string().min(1).describe('Pattern to search for (e.g., "singleton", "observer", "factory", "middleware", "decorator")'),
+      rootPath: z.string().optional().describe('Root directory to search (defaults to current working directory)'),
+      filePattern: z.string().optional().describe('File pattern to match (e.g., "*.ts", "*.{ts,tsx}")'),
+      caseSensitive: z.boolean().optional().default(false).describe('Whether to match case exactly'),
+    },
+    async ({ pattern, rootPath, filePattern, caseSensitive }) => {
+      try {
+        const result = await findPatternUsage({
+          pattern,
+          rootPath,
+          filePattern,
+          caseSensitive: caseSensitive ?? false,
+        });
+        return formatResult(formatPatternUsageResponse(result));
+      } catch (error) {
+        logger.error('Tool execution failed', { tool: 'find_pattern_usage' });
         return formatError(error);
       }
     }

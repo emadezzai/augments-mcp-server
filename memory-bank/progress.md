@@ -10,37 +10,27 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 
 ## ✅ What Works
 
-### Core v4 Features
+### Core v4 Features (3 tools)
 - [x] **get_api_context** - Query TypeScript definitions from npm
 - [x] **search_apis** - Search APIs across frameworks
 - [x] **get_version_info** - Version comparison from npm
 
-### Framework Discovery
-- [x] **list_frameworks** - List by category (NEW: 14 tools total)
+### Framework Discovery (2 tools, available by default)
 - [x] **search_frameworks** - Search with relevance
 - [x] **get_framework_info** - Framework details
-- [x] **get_registry_stats** - Registry statistics (NEW)
-- [x] Auto-discovery via npm (any package with types)
 
-### Documentation Access
+### Documentation Access (1 tool, available by default)
 - [x] **get_framework_docs** - Fetch documentation
 
-### Context Enhancement
-- [x] **get_framework_context** - Multi-framework context
-
-### Codebase Tools
-- [x] **semantic_code_search** - Semantic search in code (IMPLEMENTED: `src/tools/codebase/semantic-code-search.ts`)
-- [x] **analyze_codebase_structure** - Analyze project structure (IMPLEMENTED: `src/tools/codebase/analyze-codebase-structure.ts`)
-- [x] **get_file_context** - Get file context with imports/exports (IMPLEMENTED: `src/tools/codebase/get-file-context.ts`)
-- [x] **find_related_files** - Find related files by imports (IMPLEMENTED: `src/tools/codebase/find-related-files.ts`)
-- [x] **extract_module_api** - Extract public API from modules (IMPLEMENTED: `src/tools/codebase/extract-module-api.ts`)
-- [x] **detect_architecture_pattern** - Detect architecture patterns (IMPLEMENTED: `src/tools/codebase/detect-architecture-pattern.ts`)
-- [x] **analyze_import_graph** - Analyze import/export dependencies (IMPLEMENTED: `src/tools/codebase/analyze-import-graph.ts`)
-
-### Cache Management
-- [x] **check_framework_updates** - Check for updates (NEW)
-- [x] **refresh_cache** - Refresh cache (NEW)
-- [x] **get_cache_stats** - Cache statistics (NEW)
+### Codebase Tools (8 tools, available by default)
+- [x] **semantic_code_search** - Semantic search in code
+- [x] **analyze_codebase_structure** - Analyze project structure
+- [x] **get_file_context** - Get file context with imports/exports (NOW REGISTERED)
+- [x] **find_related_files** - Find related files by imports (NOW REGISTERED)
+- [x] **extract_module_api** - Extract public API from modules
+- [x] **detect_architecture_pattern** - Detect architecture patterns
+- [x] **analyze_import_graph** - Analyze import/export dependencies
+- [x] **find_pattern_usage** - Search for design patterns in code
 
 ### Local-First Architecture
 - [x] File-based caching (`.cache/`)
@@ -50,50 +40,40 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 
 ### MCP Server
 - [x] HTTP transport
-- [x] 19 tools exposed and registered
+- [x] 14 tools exposed and registered by default
 - [x] Vercel deployment ready
-- [x] Auto-start LaunchAgent for macOS (NEW)
+- [x] Auto-start LaunchAgent for macOS
 
 ---
 
 ## 🔄 In Progress
 
-### TOOLS-ROADMAP.md Implementation
-
-| Tool                          | Status          | Priority |
-| -------------------------------| ----------------| ----------|
-| `semantic_code_search`        | ✅ Complete     | High     |
-| `analyze_codebase_structure`  | ✅ Complete     | High     |
-| `get_file_context`            | ✅ Complete     | High     |
-| `find_related_files`          | ✅ Complete     | High     |
-| `extract_module_api`          | ✅ Complete     | Medium   |
-| `detect_architecture_pattern` | ✅ Complete     | Medium   |
-| `analyze_import_graph`        | ✅ Complete     | Medium   |
-| `find_pattern_usage`          | 🔄 Not Started | Medium   |
-| `identify_public_interfaces`  | 🔄 Not Started | Medium   |
-| `generate_code_summary`       | 🔄 Not Started | Low      |
-
-### Query Parser Improvements
-- [ ] Better framework detection
-- [ ] More accurate concept extraction
-- [ ] Handle edge cases
+### Legacy Tools (behind LEGACY_TOOLS_ENABLED env var)
+These tools are available when `LEGACY_TOOLS_ENABLED=true`:
+- `list_available_frameworks`
+- `get_registry_stats`
+- `get_framework_examples`
+- `search_documentation`
+- `analyze_code_compatibility`
+- `check_framework_updates`
+- `refresh_framework_cache`
+- `get_cache_stats`
 
 ---
 
 ## ❌ What's Left to Build
 
 ### Medium Priority
-7. **find_pattern_usage** - Pattern search
-8. **identify_public_interfaces** - Public API detection
-9. **generate_code_summary** - Code summarization
+1. **identify_public_interfaces** - Public API detection
+2. **generate_code_summary** - Code summarization
 
 ### Low Priority
-11. **find_circular_dependencies** - Circular dep detection
-12. **understand_component_tree** - Component hierarchy
-13. **analyze_state_flow** - State flow analysis
-14. **search_by_functionality** - Functional search
-15. **locate_test_files** - Test file finder
-16. **analyze_change_impact** - Impact analysis
+3. **find_circular_dependencies** - Circular dep detection
+4. **understand_component_tree** - Component hierarchy
+5. **analyze_state_flow** - State flow analysis
+6. **search_by_functionality** - Functional search
+7. **locate_test_files** - Test file finder
+8. **analyze_change_impact** - Impact analysis
 
 ---
 
@@ -125,7 +105,7 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 - File-based caching
 - Optional AI providers (Minimax, Chutes)
 - TypeScript definition focus
-- 19 MCP tools available
+- 14 MCP tools available by default (plus 8 legacy tools behind env var)
 
 ### v4.0.0
 - Initial v4 release
@@ -141,9 +121,8 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 
 ## 🎯 Next Release Goals
 
-1. **Complete find_pattern_usage** - Medium priority
-2. **Improve query parser** - Medium priority
-3. **Add more tests** - Ongoing
+1. **Improve query parser** - Medium priority
+2. **Add more tests** - Ongoing
 
 ---
 
@@ -153,3 +132,4 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 - All features work without paid services
 - TypeScript definitions are the source of truth
 - Minimal context is the goal for all tools
+- Default tool count is 14 (updated from 12)
