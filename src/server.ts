@@ -5,7 +5,8 @@
  * and context to enhance Claude Code's ability to generate accurate, up-to-date code.
  *
  * v4: Query-focused context extraction with TypeScript definition parsing.
- * Consolidated from 15 tools to 7 for better LLM tool-use decisions.
+ * Consolidated from 15 tools to 7 core tools for better LLM tool-use decisions.
+ * Includes semantic code search for large codebases (50k+ lines).
  *
  * Uses the official MCP SDK for Claude Code compatibility.
  */
@@ -43,6 +44,11 @@ import {
   getVersionInfo,
   formatVersionInfoResponse,
 } from '@/tools/v4';
+// Codebase Tools: For large codebases (50k+ lines)
+import {
+  semanticCodeSearch,
+  formatSemanticSearchResponse,
+} from '@/tools/codebase';
 import { FrameworkCategories } from '@/types';
 import { getLogger } from '@/utils/logger';
 
@@ -278,18 +284,27 @@ export async function getServer(): Promise<McpServer> {
   toolCount++;
 
   server.tool(
-    'get_framework_context',
-    'ALTERNATIVE: Get multi-framework context for a development task.',
+    'semantic_code_search',
+    'Search code semantically in large codebases. Understands meaning, not just text. Use for finding code by concept (e.g., "payment processing", "auth logic").',
     {
-      frameworks: z.array(z.string().min(1)).min(1).describe('List of framework names'),
-      task_description: z.string().min(1).describe('Description of the development task'),
+      query: z.string().min(1).describe('Natural language search query (e.g., "payment processing logic")'),
+      rootPath: z.string().optional().describe('Root directory to search (defaults to current working directory)'),
+      filePattern: z.string().optional().describe('File pattern to match (e.g., "*.ts", "*.{ts,tsx}")'),
+      maxResults: z.number().min(1).max(100).default(10).describe('Maximum number of results to return'),
+      contextLines: z.number().min(0).max(20).default(3).describe('Number of context lines around each match'),
     },
-    async ({ frameworks, task_description }) => {
+    async ({ query, rootPath, filePattern, maxResults, contextLines }) => {
       try {
-        const result = await getFrameworkContext(deps.registry, deps.cache, { frameworks, task_description });
-        return formatResult(result);
+        const result = await semanticCodeSearch({
+          query,
+          rootPath,
+          filePattern,
+          maxResults: maxResults ?? 10,
+          contextLines: contextLines ?? 3,
+        });
+        return formatResult(formatSemanticSearchResponse(result));
       } catch (error) {
-        logger.error('Tool execution failed', { tool: 'get_framework_context', error });
+        logger.error('Tool execution failed', { tool: 'semantic_code_search', error });
         return formatError(error);
       }
     }

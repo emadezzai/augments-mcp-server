@@ -41,3 +41,11 @@ export {
   type CodeExample,
   type DocSourceConfig,
 } from './example-extractor';
+
+// Code Search Engine
+export {
+  CodeSearchEngine,
+  getCodeSearchEngine,
+  type CodeSearchResult,
+  type SearchOptions,
+} from './code-search-engine';
