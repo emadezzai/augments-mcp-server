@@ -70,7 +70,7 @@ Related types:
 
 ## Current Tool Set
 
-The server provides **14 tools by default**:
+The server provides **16 tools by default**:
 
 ### Primary (3)
 - `get_api_context` - Query TypeScript definitions

@@ -155,7 +155,7 @@ npm run build
 
 ## MCP Server Configuration
 
-The server exposes **14 tools by default** (plus 8 legacy tools behind env var):
+The server exposes **16 tools by default** (plus 8 legacy tools behind env var):
 
 ### Primary Tools (3) - RECOMMENDED for most tasks
 1. `get_api_context` - Get precise API signatures, parameters, return types, and code examples for any npm package

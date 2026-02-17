@@ -25,14 +25,14 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 ### Codebase Tools (10 tools, available by default)
 - [x] **semantic_code_search** - Semantic search in code
 - [x] **analyze_codebase_structure** - Analyze project structure
-- [x] **get_file_context** - Get file context with imports/exports (NOW REGISTERED)
-- [x] **find_related_files** - Find related files by imports (NOW REGISTERED)
+- [x] **get_file_context** - Get file context with imports/exports
+- [x] **find_related_files** - Find related files by imports
 - [x] **extract_module_api** - Extract public API from modules
 - [x] **detect_architecture_pattern** - Detect architecture patterns
 - [x] **analyze_import_graph** - Analyze import/export dependencies
 - [x] **find_pattern_usage** - Search for design patterns in code
-- [x] **identify_public_interfaces** - Identify public vs internal exports (NOW IMPLEMENTED & REGISTERED)
-- [x] **generate_code_summary** - Generate code summaries (NOW IMPLEMENTED & REGISTERED)
+- [x] **identify_public_interfaces** - Identify public vs internal exports
+- [x] **generate_code_summary** - Generate code summaries
 
 ### Local-First Architecture
 - [x] File-based caching (`.cache/`)
@@ -42,9 +42,10 @@ The Augments MCP Server is stable and functional. Core v4 features work, with on
 
 ### MCP Server
 - [x] HTTP transport
-- [x] 16 tools exposed and registered by default
+- [x] 16 tools exposed and registered by default (3 core v4 + 3 framework + 10 codebase)
 - [x] Vercel deployment ready
 - [x] Auto-start LaunchAgent for macOS
+- [x] PM2/systemd support for continuous operation
 
 ---
 
